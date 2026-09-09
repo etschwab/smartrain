@@ -9,7 +9,11 @@ export const SSO_VERIFIER_COOKIE = "smartrain-sso-verifier";
 export const SSO_NEXT_COOKIE = "smartrain-sso-next";
 
 const SSO_FLOW_MAX_AGE = 10 * 60;
-const SSO_REFRESH_MAX_AGE = 400 * 24 * 60 * 60;
+// The refresh-token cookie's own Max-Age. Each refresh (see proxy.ts) resets it
+// to this value again, so an actively used session keeps working - this only
+// bounds how long a dormant cookie (idle browser, old device, stolen and never
+// used) stays valid before it's forced to expire and re-authenticate.
+const SSO_REFRESH_MAX_AGE = 45 * 24 * 60 * 60;
 
 export type SsoTokens = {
   accessToken: string;
