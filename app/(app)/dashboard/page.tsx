@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarPlus, MapPin, Plus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,11 @@ import { managerRoles, MAX_OWNED_TEAMS } from "@/lib/constants";
 import { getCoreDashboardData } from "@/lib/data";
 import { requireProfile } from "@/lib/supabase-server";
 import { formatDateTimeLabel, formatEventCountdown, getDisplayName, getEventTypeLabel, getRoleLabel } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Deine Teams, das nächste Training und offene Aufgaben auf einen Blick."
+};
 
 export default async function DashboardPage() {
   const { supabase, user, profile } = await requireProfile("/dashboard");

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,11 @@ import { MAX_OWNED_TEAMS } from "@/lib/constants";
 import { listUserTeams } from "@/lib/data";
 import { requireProfile } from "@/lib/supabase-server";
 import { getRoleLabel, getTeamAccentColor } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Meine Teams",
+  description: "Alle Teams, in denen du Mitglied oder Owner bist."
+};
 
 export default async function TeamsPage() {
   const { supabase, user } = await requireProfile("/teams");

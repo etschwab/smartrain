@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarPlus, UserPlus, Users } from "lucide-react";
@@ -12,6 +13,11 @@ import { requireTeamAccess } from "@/lib/supabase-server";
 import { formatDateTimeLabel, getEventTypeLabel, getRoleLabel, isFutureDate } from "@/lib/utils";
 
 type TeamPageProps = { params: Promise<{ teamId: string }> };
+
+export const metadata: Metadata = {
+  title: "Team-Übersicht",
+  description: "Mitglieder, nächste Termine und offene Aufgaben für dieses Team."
+};
 
 export default async function TeamOverviewPage({ params }: TeamPageProps) {
   const { teamId } = await params;

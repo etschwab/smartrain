@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Link2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,11 @@ import { requireTeamAccess } from "@/lib/supabase-server";
 import { buildJoinPath, getMemberStatusLabel, getRoleLabel } from "@/lib/utils";
 
 type TeamMembersPageProps = { params: Promise<{ teamId: string }> };
+
+export const metadata: Metadata = {
+  title: "Mitglieder",
+  description: "Mitglieder verwalten und neue Coaches, Spieler oder Eltern einladen."
+};
 
 export default async function TeamMembersPage({ params }: TeamMembersPageProps) {
   const { teamId } = await params;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -9,6 +10,11 @@ import { createTeamAction } from "@/lib/actions";
 import { MAX_OWNED_TEAMS, teamColorOptions } from "@/lib/constants";
 import { listUserTeams } from "@/lib/data";
 import { requireProfile } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Team erstellen",
+  description: "Lege einen neuen Teamraum an und lade dein Team ein."
+};
 
 export default async function NewTeamPage() {
   const { supabase, user } = await requireProfile("/teams/new");

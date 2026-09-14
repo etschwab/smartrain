@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarPlus, CopyPlus, MapPin, Trash2 } from "lucide-react";
@@ -15,6 +16,11 @@ import { requireTeamAccess } from "@/lib/supabase-server";
 import { formatDateTimeLabel, getEventTypeLabel, isFutureDate } from "@/lib/utils";
 
 type TeamEventsPageProps = { params: Promise<{ teamId: string }> };
+
+export const metadata: Metadata = {
+  title: "Trainings & Spiele",
+  description: "Alle Termine des Teams sowie gespeicherte Terminvorlagen."
+};
 
 export default async function TeamEventsPage({ params }: TeamEventsPageProps) {
   const { teamId } = await params;
