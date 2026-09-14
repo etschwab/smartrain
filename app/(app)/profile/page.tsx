@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,11 @@ import { SubmitButton } from "@/components/forms/submit-button";
 import { updateProfileAction } from "@/lib/actions";
 import { requireProfile } from "@/lib/supabase-server";
 import { formatDateLabel, getDisplayName } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Profil",
+  description: "Deine Kontodaten und Anzeigeeinstellungen."
+};
 
 export default async function ProfilePage() {
   const { user, profile } = await requireProfile("/profile");

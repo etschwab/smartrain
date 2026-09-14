@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { safeLocalPath } from "@/lib/safe-redirect";
@@ -6,6 +7,11 @@ import { dataServiceUnavailableMessage, isSupabaseConnectionError } from "@/lib/
 import { getSsoConfig } from "@/lib/sso";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Konto erstellen",
+  description: "Erstelle in wenigen Minuten deinen kostenlosen Smartrain-Teamraum."
+};
 
 type SignupPageProps = {
   searchParams: Promise<{

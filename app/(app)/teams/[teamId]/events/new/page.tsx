@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,11 @@ type NewEventPageProps = {
   params: Promise<{
     teamId: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Termin erstellen",
+  description: "Plane ein neues Training, Spiel oder Event für dein Team."
 };
 
 export default async function NewEventPage({ params }: NewEventPageProps) {

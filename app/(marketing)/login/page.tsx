@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { SsoErrorCard } from "@/components/auth/sso-error-card";
@@ -7,6 +8,11 @@ import { dataServiceUnavailableMessage, isSupabaseConnectionError } from "@/lib/
 import { getSsoConfig } from "@/lib/sso";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Anmelden",
+  description: "Melde dich bei Smartrain an, um deine Teams, Trainings und Events zu verwalten."
+};
 
 type LoginPageProps = {
   searchParams: Promise<{

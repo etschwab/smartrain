@@ -1,7 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Newsreader, Source_Sans_3 } from "next/font/google";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { GradientWavesBackground } from "@/components/effects/gradient-waves-background";
 import { getSiteUrl } from "@/lib/site-url";
@@ -55,10 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de" className={`dark ${sourceSans.variable} ${newsreader.variable}`}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <GradientWavesBackground />
-        <ThemeProvider>
-          {children}
-          <ToastProvider />
-        </ThemeProvider>
+        {children}
+        <ToastProvider />
       </body>
     </html>
   );

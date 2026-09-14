@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,11 @@ import { getOptionalUser } from "@/lib/supabase-server";
 import { getRoleLabel } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Einladung",
+  description: "Tritt einem Team auf Smartrain bei."
+};
 
 type JoinPageProps = {
   params: Promise<{

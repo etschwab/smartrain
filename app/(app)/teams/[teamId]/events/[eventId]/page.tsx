@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CalendarClock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,11 @@ import { requireTeamAccess } from "@/lib/supabase-server";
 import { formatDateTimeLabel, getEventTypeLabel, toDateTimeLocalValue } from "@/lib/utils";
 
 type EventDetailPageProps = { params: Promise<{ teamId: string; eventId: string }> };
+
+export const metadata: Metadata = {
+  title: "Termin",
+  description: "Details, Zu-/Absagen und Bearbeitung dieses Termins."
+};
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { teamId, eventId } = await params;
