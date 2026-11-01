@@ -8,7 +8,8 @@ const messages: Record<string, string> = {
   sso_callback_failed: "Die zentrale Anmeldung konnte nicht abgeschlossen werden.",
   sso_not_configured: "Die zentrale Anmeldung ist für diese Umgebung noch nicht vollständig eingerichtet.",
   sso_state_invalid: "Die Sicherheitsprüfung der Anmeldung ist fehlgeschlagen. Bitte starte den Vorgang erneut.",
-  sso_token_exchange_failed: "Die Anmeldebestätigung ist abgelaufen oder konnte nicht eingelöst werden."
+  sso_token_exchange_failed: "Die Anmeldebestätigung ist abgelaufen oder konnte nicht eingelöst werden.",
+  sso_unavailable: "Der Anmeldedienst ist gerade nicht erreichbar. Bitte versuche es in ein paar Minuten erneut."
 };
 
 export function SsoErrorCard({ error, nextPath }: { error: string; nextPath: string }) {

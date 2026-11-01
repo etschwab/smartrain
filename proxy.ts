@@ -54,7 +54,9 @@ export async function proxy(request: NextRequest) {
   const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   const requestHost = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "").split(":")[0].toLowerCase();
 
-  if (configuredSiteUrl && requestHost.endsWith(".vercel.app")) {
+  // Only production *.vercel.app aliases move to the custom domain; preview
+  // deployments must stay reachable on their own URL to be tested.
+  if (configuredSiteUrl && process.env.VERCEL_ENV === "production" && requestHost.endsWith(".vercel.app")) {
     const canonicalUrl = new URL(configuredSiteUrl);
 
     if (requestHost !== canonicalUrl.hostname.toLowerCase()) {

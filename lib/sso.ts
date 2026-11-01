@@ -127,6 +127,23 @@ export function buildAuthorizationUrl(config: SsoConfig, challenge: string, stat
   return url;
 }
 
+/**
+ * Without this check a paused or deleted Supabase project sends the browser to
+ * a DNS error page. Any HTTP answer below 500 (401 without apikey included)
+ * means the auth server is up.
+ */
+export async function isAuthServerReachable(config: SsoConfig) {
+  try {
+    const response = await fetch(new URL("/auth/v1/health", config.authorizeEndpoint), {
+      cache: "no-store",
+      signal: AbortSignal.timeout(4_000)
+    });
+    return response.status < 500;
+  } catch {
+    return false;
+  }
+}
+
 function parseTokenResponse(value: unknown): SsoTokens | null {
   if (!value || typeof value !== "object") {
     return null;
