@@ -28,11 +28,13 @@ Ohne SSO-Konfiguration kannst du wie bisher `http://localhost:3000` öffnen. Mit
 1. Erstelle ein kostenloses Supabase-Projekt.
 2. Kopiere `Project URL` und `anon public key` nach `.env.local`.
 3. Oeffne in Supabase den SQL Editor.
-4. Fuehre `supabase/schema.sql` aus.
-5. Fuehre anschliessend die Dateien in `supabase/migrations` in aufsteigender Reihenfolge aus. Für Terminvorlagen muss auch `202608260001_event_templates.sql` ausgeführt sein.
+4. Fuehre `supabase/setup.sql` einmal aus. Die Datei enthaelt `schema.sql` und alle Migrationen in der richtigen Reihenfolge; nach einer neuen Migration mit `npm run db:setup-sql` neu erzeugen.
+5. Bei einem bestehenden Projekt stattdessen nur die neuen Dateien aus `supabase/migrations` ausfuehren.
 6. Aktiviere unter `Authentication > Providers > Email` den Email-Login.
 7. Aktiviere dort auch `Email + Password`, wenn du klassische Registrierung und Passwort-Login willst.
 8. Für den zentralen Login folge der vollständigen Anleitung in [`docs/SUPABASE_SSO.md`](docs/SUPABASE_SSO.md).
+
+Neustart mit einem neuen Supabase-Projekt (z. B. nach Löschung): [`docs/NEUES_SUPABASE_PROJEKT.md`](docs/NEUES_SUPABASE_PROJEKT.md).
 
 ## Funktionsumfang
 

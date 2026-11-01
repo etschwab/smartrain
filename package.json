@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:setup-sql": "node scripts/build-supabase-setup.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
