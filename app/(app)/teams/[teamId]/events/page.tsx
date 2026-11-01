@@ -1,30 +1,63 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarPlus, CopyPlus, MapPin, Trash2 } from "lucide-react";
+import { CalendarPlus, ChevronRight, CopyPlus, Trash2 } from "lucide-react";
 import { ConfirmSubmit } from "@/components/confirm-submit";
+import { ResponseBadge } from "@/components/events/response-controls";
 import { SubmitButton } from "@/components/forms/submit-button";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { TeamTabs } from "@/components/team/team-tabs";
+import { TeamHeader } from "@/components/team/team-header";
 import { createEventFromTemplateAction, deleteEventTemplateAction } from "@/lib/actions";
 import { managerRoles } from "@/lib/constants";
-import { getTeamById, listEventTemplates, listTeamEvents } from "@/lib/data";
+import { getTeamById, listEventTemplates, listTeamEvents, listUserResponses } from "@/lib/data";
 import { requireTeamAccess } from "@/lib/supabase-server";
-import { formatDateTimeLabel, getEventTypeLabel, isFutureDate } from "@/lib/utils";
+import { formatDateTimeLabel, formatTimeLabel, getEventTypeLabel, isFutureDate } from "@/lib/utils";
+import type { EventRecord, EventResponseRecord } from "@/lib/types";
 
 type TeamEventsPageProps = { params: Promise<{ teamId: string }> };
 
 export const metadata: Metadata = {
-  title: "Trainings & Spiele",
-  description: "Alle Termine des Teams sowie gespeicherte Terminvorlagen."
+  title: "Termine",
+  description: "Alle Trainings, Spiele und Events des Teams."
 };
+
+function EventList({ teamId, events, responses, showResponse }: { teamId: string; events: EventRecord[]; responses: Map<string, EventResponseRecord>; showResponse: boolean }) {
+  return (
+    <Card className="divide-y divide-border">
+      {events.map((event) => (
+        <Link
+          key={event.id}
+          href={`/teams/${teamId}/events/${event.id}`}
+          className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-muted/50"
+        >
+          <span className="min-w-0">
+            <span className={event.is_cancelled ? "block truncate font-medium text-muted-foreground line-through" : "block truncate font-medium"}>
+              {event.title}
+            </span>
+            <span className="block text-sm text-muted-foreground">
+              {getEventTypeLabel(event.type)} · {formatDateTimeLabel(event.starts_at)}–{formatTimeLabel(event.ends_at)}
+              {event.location ? ` · ${event.location}` : ""}
+            </span>
+          </span>
+          <span className="flex shrink-0 items-center gap-2">
+            {event.is_cancelled ? (
+              <span className="text-sm text-destructive">Abgesagt</span>
+            ) : showResponse ? (
+              <ResponseBadge status={responses.get(event.id)?.status} />
+            ) : null}
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </span>
+        </Link>
+      ))}
+    </Card>
+  );
+}
 
 export default async function TeamEventsPage({ params }: TeamEventsPageProps) {
   const { teamId } = await params;
-  const { supabase, membership } = await requireTeamAccess(teamId, `/teams/${teamId}/events`);
+  const { supabase, user, membership } = await requireTeamAccess(teamId, `/teams/${teamId}/events`);
   const canManage = managerRoles.includes(membership.role);
   const [team, events, templates] = await Promise.all([
     getTeamById(supabase, teamId),
@@ -34,74 +67,48 @@ export default async function TeamEventsPage({ params }: TeamEventsPageProps) {
 
   if (!team) notFound();
 
-  const upcoming = events.filter((event) => isFutureDate(event.starts_at));
-  const past = events.filter((event) => !isFutureDate(event.starts_at)).reverse();
-
-  const eventList = (items: typeof events) => (
-    <div className="space-y-3">
-      {items.map((event) => (
-        <Link key={event.id} href={`/teams/${team.id}/events/${event.id}`} className="block rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted/40">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-lg font-semibold">{event.title}</h3>
-                <Badge>{getEventTypeLabel(event.type)}</Badge>
-                {event.is_cancelled ? <Badge variant="danger">Abgesagt</Badge> : null}
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">{formatDateTimeLabel(event.starts_at)}</p>
-              <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{event.location ?? "Ort noch offen"}</p>
-            </div>
-            <span className="text-sm font-semibold text-primary">Öffnen</span>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
+  const upcoming = events.filter((event) => isFutureDate(event.ends_at));
+  const past = events.filter((event) => !isFutureDate(event.ends_at)).reverse().slice(0, 20);
+  const responses = await listUserResponses(supabase, user.id, upcoming.map((event) => event.id));
 
   return (
     <div className="space-y-8">
-      <Card className="p-6 sm:p-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="section-kicker">Trainings & Events</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{team.name}</h1>
-            <p className="mt-3 text-muted-foreground">Alle Termine dieses Teams an einem Ort.</p>
-          </div>
-          {canManage ? (
-            <Button asChild><Link href={`/teams/${team.id}/events/new`}><CalendarPlus className="h-4 w-4" />Neuer Termin</Link></Button>
-          ) : null}
-        </div>
-        <div className="mt-6"><TeamTabs teamId={team.id} /></div>
-      </Card>
+      <TeamHeader
+        team={team}
+        role={membership.role}
+        action={
+          canManage ? (
+            <Button asChild>
+              <Link href={`/teams/${team.id}/events/new`}><CalendarPlus className="h-4 w-4" />Termin erstellen</Link>
+            </Button>
+          ) : null
+        }
+      />
 
       {canManage && templates.length > 0 ? (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold">Terminvorlagen</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Wiederkehrende Termine mit einem Klick erneut anlegen.</p>
-          </div>
-          <div className="grid gap-3 lg:grid-cols-2">
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground">Vorlagen</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
             {templates.map((template) => (
-              <Card key={template.id} className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="truncate font-semibold">{template.name}</h3>
-                      <Badge>{getEventTypeLabel(template.type)}</Badge>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{template.duration_minutes} Minuten{template.location ? ` · ${template.location}` : ""}</p>
-                  </div>
+              <Card key={template.id} className="flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{template.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {getEventTypeLabel(template.type)} · {formatTimeLabel(template.source_starts_at)} · {template.duration_minutes} Min.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <form action={createEventFromTemplateAction.bind(null, team.id, template.id)}>
+                    <SubmitButton variant="secondary" size="sm" pendingLabel="...">
+                      <CopyPlus className="h-4 w-4" />Nächster
+                    </SubmitButton>
+                  </form>
                   <form action={deleteEventTemplateAction.bind(null, team.id, template.id)}>
                     <ConfirmSubmit type="submit" variant="ghost" size="icon" aria-label="Vorlage löschen" confirmMessage={`Vorlage „${template.name}“ löschen?`}>
                       <Trash2 className="h-4 w-4" />
                     </ConfirmSubmit>
                   </form>
                 </div>
-                <form action={createEventFromTemplateAction.bind(null, team.id, template.id)} className="mt-5">
-                  <SubmitButton variant="secondary" className="w-full" pendingLabel="Termin wird erstellt...">
-                    <CopyPlus className="h-4 w-4" />Nächsten Termin erstellen
-                  </SubmitButton>
-                </form>
               </Card>
             ))}
           </div>
@@ -110,20 +117,24 @@ export default async function TeamEventsPage({ params }: TeamEventsPageProps) {
 
       {events.length === 0 ? (
         <EmptyState
-          title="Noch keine Trainings oder Events"
-          description="Erstelle den ersten Termin für dieses Team."
+          title="Noch keine Termine"
+          description={canManage ? "Erstelle das erste Training oder Spiel." : "Sobald ein Coach Termine anlegt, erscheinen sie hier."}
           action={canManage ? <Button asChild><Link href={`/teams/${team.id}/events/new`}>Termin erstellen</Link></Button> : undefined}
         />
       ) : (
         <>
-          <section>
-            <h2 className="mb-4 text-xl font-semibold">Bevorstehend</h2>
-            {upcoming.length > 0 ? eventList(upcoming) : <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">Keine bevorstehenden Termine.</p>}
+          <section className="space-y-3">
+            <h2 className="text-sm font-medium text-muted-foreground">Bevorstehend</h2>
+            {upcoming.length > 0 ? (
+              <EventList teamId={team.id} events={upcoming} responses={responses} showResponse />
+            ) : (
+              <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">Keine bevorstehenden Termine.</p>
+            )}
           </section>
           {past.length > 0 ? (
-            <section>
-              <h2 className="mb-4 text-xl font-semibold">Vergangen</h2>
-              {eventList(past)}
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium text-muted-foreground">Vergangen</h2>
+              <EventList teamId={team.id} events={past} responses={responses} showResponse={false} />
             </section>
           ) : null}
         </>

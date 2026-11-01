@@ -16,14 +16,19 @@ export function ShareInviteButton({ url, title }: ShareInviteButtonProps) {
       return;
     }
 
-    await navigator.share({
-      title,
-      url
-    });
+    try {
+      await navigator.share({
+        title,
+        url
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      toast.error("Teilen ist fehlgeschlagen. Kopiere den Link stattdessen.");
+    }
   }
 
   return (
-    <Button type="button" variant="ghost" onClick={handleShare}>
+    <Button type="button" variant="secondary" onClick={handleShare}>
       <Share2 className="h-4 w-4" />
       Teilen
     </Button>

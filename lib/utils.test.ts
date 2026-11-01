@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  addWeeksInAppZone,
   buildJoinPath,
+  formatDateTimeLabel,
   formatEventCountdown,
   getDisplayName,
   getEventTypeLabel,
@@ -10,7 +12,9 @@ import {
   getRoleLabel,
   getTaskStatusLabel,
   getTeamAccentColor,
-  isFutureDate
+  isFutureDate,
+  parseDateTimeLocal,
+  toDateTimeLocalValue
 } from "./utils";
 
 describe("getInitials", () => {
@@ -136,5 +140,38 @@ describe("label lookups", () => {
 
   it("falls back to the raw value for a key missing from the label map", () => {
     expect(getRoleLabel("guest" as never)).toBe("guest");
+  });
+});
+
+describe("Swiss time zone handling", () => {
+  it("parses datetime-local input as Swiss summer time", () => {
+    expect(parseDateTimeLocal("2026-07-14T18:30")?.toISOString()).toBe("2026-07-14T16:30:00.000Z");
+  });
+
+  it("parses datetime-local input as Swiss winter time", () => {
+    expect(parseDateTimeLocal("2026-11-17T18:30")?.toISOString()).toBe("2026-11-17T17:30:00.000Z");
+  });
+
+  it("rejects malformed input", () => {
+    expect(parseDateTimeLocal("")).toBeNull();
+    expect(parseDateTimeLocal("morgen")).toBeNull();
+  });
+
+  it("round-trips through toDateTimeLocalValue", () => {
+    expect(toDateTimeLocalValue("2026-07-14T16:30:00.000Z")).toBe("2026-07-14T18:30");
+    expect(toDateTimeLocalValue("2026-11-17T17:30:00.000Z")).toBe("2026-11-17T18:30");
+  });
+
+  it("keeps the local training time when a weekly series crosses the DST change", () => {
+    const beforeChange = parseDateTimeLocal("2026-10-20T18:30")!;
+    const afterChange = addWeeksInAppZone(beforeChange, 1);
+    expect(afterChange.toISOString()).toBe("2026-10-27T17:30:00.000Z");
+    expect(toDateTimeLocalValue(afterChange)).toBe("2026-10-27T18:30");
+  });
+
+  it("labels today and tomorrow relative to Swiss time", () => {
+    const now = new Date("2026-07-14T21:30:00.000Z"); // 23:30 in Zurich
+    expect(formatDateTimeLabel("2026-07-14T20:00:00.000Z", now)).toBe("Heute, 22:00");
+    expect(formatDateTimeLabel("2026-07-14T22:30:00.000Z", now)).toBe("Morgen, 00:30");
   });
 });

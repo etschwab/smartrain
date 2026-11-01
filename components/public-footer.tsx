@@ -2,14 +2,13 @@ import Link from "next/link";
 
 export function PublicFooter() {
   return (
-    <footer className="site-footer">
-      <div className="content-wrap footer-inner">
-        <p className="footer-name"><strong>Smartrain</strong></p>
-        <nav className="footer-links" aria-label="Rechtliche Links">
-          <Link href="/impressum">Impressum</Link>
-          <Link href="/datenschutz">Datenschutz</Link>
+    <footer className="border-t border-border">
+      <div className="content-wrap flex flex-col items-center justify-between gap-3 py-6 text-sm text-muted-foreground sm:flex-row">
+        <p>© {new Date().getFullYear()} Smartrain · Bern, Schweiz</p>
+        <nav className="flex gap-5" aria-label="Rechtliche Links">
+          <Link href="/impressum" className="hover:text-foreground">Impressum</Link>
+          <Link href="/datenschutz" className="hover:text-foreground">Datenschutz</Link>
         </nav>
-        <p className="footer-meta">© {new Date().getFullYear()} · Bern, Schweiz</p>
       </div>
     </footer>
   );

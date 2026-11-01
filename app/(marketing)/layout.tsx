@@ -6,14 +6,14 @@ import { ToastFromSearch } from "@/components/toast-from-search";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Suspense fallback={<PublicNavbar />}>
         <PublicNavbarAuth />
       </Suspense>
       <Suspense fallback={null}>
         <ToastFromSearch />
       </Suspense>
-      {children}
+      <div className="flex-1">{children}</div>
       <PublicFooter />
     </div>
   );

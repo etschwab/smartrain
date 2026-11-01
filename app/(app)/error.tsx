@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 export default function AppError({
   error,
@@ -16,15 +16,17 @@ export default function AppError({
   }, [error]);
 
   return (
-    <Card className="mx-auto max-w-2xl p-8 text-center">
-      <p className="section-kicker">Fehler</p>
-      <h2 className="mt-3 text-3xl font-semibold">Etwas ist schiefgelaufen.</h2>
-      <p className="mt-3 text-muted-foreground">
-        Bitte versuche die Aktion erneut. Wenn das Problem bleibt, prüfe die betroffenen Eingaben oder melde dich erneut an.
+    <div className="mx-auto max-w-md py-12 text-center">
+      <h2 className="text-xl font-semibold">Etwas ist schiefgelaufen</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Bitte versuche es erneut. Wenn das Problem bleibt, lade die Seite neu oder melde dich neu an.
       </p>
-      <div className="mt-6 flex justify-center">
+      <div className="mt-6 flex justify-center gap-2">
         <Button onClick={() => reset()}>Erneut versuchen</Button>
+        <Button asChild variant="secondary">
+          <Link href="/dashboard">Zur Übersicht</Link>
+        </Button>
       </div>
-    </Card>
+    </div>
   );
 }

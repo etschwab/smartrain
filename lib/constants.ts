@@ -61,15 +61,15 @@ export const memberStatusLabels: Record<MemberStatus, string> = {
 
 export const teamColorOptions = [
   "#dc2626",
-  "#e11d48",
-  "#b91c1c",
-  "#991b1b",
-  "#f97316",
   "#ea580c",
-  "#7f1d1d",
-  "#be123c",
-  "#1f2937",
-  "#111827"
+  "#d97706",
+  "#15803d",
+  "#0891b2",
+  "#2563eb",
+  "#4f46e5",
+  "#9333ea",
+  "#db2777",
+  "#52525b"
 ];
 
 export const toastMessages: Record<string, string> = {
@@ -114,7 +114,7 @@ export const toastMessages: Record<string, string> = {
   "lineup-updated": "Aufstellung aktualisiert",
   "events-created": "Terminserie erstellt",
   "events-imported": "Termine importiert",
-  "event-cancelled": "Termin abgesagt und Team informiert",
+  "event-cancelled": "Termin abgesagt",
   "event-reactivated": "Termin reaktiviert",
   "game-report-saved": "Spielbericht gespeichert"
 };
