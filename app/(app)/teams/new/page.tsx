@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { createTeamAction } from "@/lib/actions";
 import { MAX_OWNED_TEAMS, teamColorOptions } from "@/lib/constants";
@@ -13,7 +14,7 @@ import { requireProfile } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Team erstellen",
-  description: "Lege einen neuen Teamraum an und lade dein Team ein."
+  description: "Lege ein neues Team an und lade danach die Mitglieder ein."
 };
 
 export default async function NewTeamPage() {
@@ -26,55 +27,47 @@ export default async function NewTeamPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl page-stack">
-      <Card className="overflow-hidden p-8">
-        <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr] lg:items-start">
-          <div className="space-y-4">
-            <p className="section-kicker">Neues Team</p>
-            <h1 className="text-4xl font-semibold">Lege einen neuen Teamraum an.</h1>
-            <p className="text-muted-foreground">
-              Name, Sportart, Saison und Grundfarbe bilden die Basis für euren gemeinsamen Teambereich mit Einladungen,
-              Trainings und Rückmeldungen.
-            </p>
-            <div className="rounded-none border border-border bg-background/70 p-5 text-sm text-muted-foreground">
-              <div className="mb-3 flex items-center gap-2 text-foreground">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="font-semibold">Was direkt danach möglich ist</span>
-              </div>
-              <p>Mitglieder einladen, Termine planen, Aufgaben verteilen und auf Trainings Zu- oder Absagen sammeln.</p>
-            </div>
-            <div className="rounded-none border border-border bg-background/70 p-5 text-sm text-muted-foreground">
-              Eigene Teams: {ownedTeams.length}/{MAX_OWNED_TEAMS}
-            </div>
-          </div>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader
+        title="Neues Team"
+        description="Danach kannst du direkt Mitglieder per Link einladen und Termine planen."
+      />
 
-          <form action={createTeamAction} className="grid gap-5">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Input name="name" placeholder="Teamname, z. B. U17 Frauen" required />
-              <Input name="sport" placeholder="Sportart, z. B. Fussball" required />
-              <Input name="season" placeholder="Saison, z. B. 2026/27" required />
-              <Input name="logo_url" placeholder="Optional: Logo-URL" />
+      <Card className="p-5 sm:p-6">
+        <form action={createTeamAction} className="grid gap-5">
+          <Field label="Teamname">
+            <Input name="name" placeholder="z. B. U17 Frauen" required maxLength={80} />
+          </Field>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Sportart">
+              <Input name="sport" placeholder="z. B. Fussball" required maxLength={60} />
+            </Field>
+            <Field label="Saison">
+              <Input name="season" placeholder="z. B. 2026/27" required maxLength={40} />
+            </Field>
+          </div>
+          <fieldset className="grid gap-2">
+            <legend className="mb-1.5 text-sm font-medium">Teamfarbe</legend>
+            <div className="flex flex-wrap gap-2">
+              {teamColorOptions.map((color, index) => (
+                <label key={color} className="cursor-pointer">
+                  <input type="radio" name="theme_color" value={color} defaultChecked={index === 0} className="peer sr-only" />
+                  <span
+                    className="block h-8 w-8 rounded-full ring-offset-2 ring-offset-card peer-checked:ring-2 peer-checked:ring-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="sr-only">Farbe {color}</span>
+                </label>
+              ))}
             </div>
-            <div className="space-y-3">
-              <label className="text-sm font-semibold">Teamfarbe</label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {teamColorOptions.map((color, index) => (
-                  <label key={`${color}-${index}`} className="flex cursor-pointer items-center gap-3 rounded-none border border-border bg-background/75 px-4 py-3 text-sm">
-                    <input type="radio" name="theme_color" value={color} defaultChecked={index === 0} />
-                    <span className="h-5 w-5 rounded-full" style={{ backgroundColor: color }} />
-                    <span className="font-medium">{color}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button asChild variant="secondary">
-                <Link href="/teams">Abbrechen</Link>
-              </Button>
-              <SubmitButton pendingLabel="Team wird erstellt...">Team erstellen</SubmitButton>
-            </div>
-          </form>
-        </div>
+          </fieldset>
+          <div className="flex justify-end gap-2 border-t border-border pt-5">
+            <Button asChild variant="ghost">
+              <Link href="/teams">Abbrechen</Link>
+            </Button>
+            <SubmitButton pendingLabel="Wird erstellt...">Team erstellen</SubmitButton>
+          </div>
+        </form>
       </Card>
     </div>
   );

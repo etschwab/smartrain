@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { runAction } from "@/lib/action-errors";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireProfile, requireTeamManager, requireTeamOwner } from "@/lib/supabase-server";
 import { managerRoles, MAX_OWNED_TEAMS } from "@/lib/constants";
@@ -201,6 +202,7 @@ async function assertNotLastOwner(
     .from("team_members")
     .select("*")
     .eq("id", memberId)
+    .eq("team_id", teamId)
     .single();
 
   if (memberError) {
@@ -219,6 +221,10 @@ async function assertNotLastOwner(
 }
 
 export async function createTeamAction(formData: FormData) {
+  await runAction("/teams/new", () => createTeam(formData));
+}
+
+async function createTeam(formData: FormData) {
   const { supabase, user } = await requireProfile("/teams/new");
 
   const name = getString(formData, "name");
@@ -346,15 +352,19 @@ export async function createInviteAction(teamId: string, formData: FormData) {
 }
 
 export async function regenerateInviteAction(teamId: string, inviteId: string) {
+  await runAction(`/teams/${teamId}/members`, () => regenerateInvite(teamId, inviteId));
+}
+
+async function regenerateInvite(teamId: string, inviteId: string) {
   const { supabase, user } = await requireTeamManager(teamId, `/teams/${teamId}/members`);
   const writeClient = createAdminClient() ?? supabase;
-  const { data: invite, error } = await writeClient.from("team_invites").select("*").eq("id", inviteId).single();
+  const { data: invite, error } = await writeClient.from("team_invites").select("*").eq("id", inviteId).eq("team_id", teamId).single();
 
   if (error) {
     throw new Error(getUserFacingSupabaseError(error, "Der Einladungslink konnte nicht geladen werden."));
   }
 
-  const { error: disableError } = await writeClient.from("team_invites").update({ is_active: false }).eq("id", inviteId);
+  const { error: disableError } = await writeClient.from("team_invites").update({ is_active: false }).eq("id", inviteId).eq("team_id", teamId);
 
   if (disableError) {
     throw new Error(getUserFacingSupabaseError(disableError, "Der Einladungslink konnte nicht aktualisiert werden."));
@@ -366,9 +376,13 @@ export async function regenerateInviteAction(teamId: string, inviteId: string) {
 }
 
 export async function toggleInviteAction(teamId: string, inviteId: string, nextActive: boolean) {
+  await runAction(`/teams/${teamId}/members`, () => toggleInvite(teamId, inviteId, nextActive));
+}
+
+async function toggleInvite(teamId: string, inviteId: string, nextActive: boolean) {
   const { supabase } = await requireTeamManager(teamId, `/teams/${teamId}/members`);
   const writeClient = createAdminClient() ?? supabase;
-  const { error } = await writeClient.from("team_invites").update({ is_active: nextActive }).eq("id", inviteId);
+  const { error } = await writeClient.from("team_invites").update({ is_active: nextActive }).eq("id", inviteId).eq("team_id", teamId);
 
   if (error) {
     throw new Error(getUserFacingSupabaseError(error, "Der Einladungslink konnte nicht geändert werden."));
@@ -378,6 +392,10 @@ export async function toggleInviteAction(teamId: string, inviteId: string, nextA
 }
 
 export async function joinTeamAction(inviteCode: string) {
+  await runAction(`/join/${encodeURIComponent(inviteCode)}`, () => joinTeam(inviteCode));
+}
+
+async function joinTeam(inviteCode: string) {
   const { supabase, user } = await requireProfile(`/join/${inviteCode}`);
   const adminSupabase = createAdminClient();
   let teamId: string;
@@ -458,6 +476,10 @@ export async function joinTeamAction(inviteCode: string) {
 }
 
 export async function updateMemberRoleAction(teamId: string, memberId: string, formData: FormData) {
+  await runAction(`/teams/${teamId}/members`, () => updateMemberRole(teamId, memberId, formData));
+}
+
+async function updateMemberRole(teamId: string, memberId: string, formData: FormData) {
   const { supabase } = await requireTeamOwner(teamId, `/teams/${teamId}/members`);
   const role = getString(formData, "role");
 
@@ -473,7 +495,7 @@ export async function updateMemberRoleAction(teamId: string, memberId: string, f
     }
   }
 
-  const { error } = await supabase.from("team_members").update({ role }).eq("id", memberId);
+  const { error } = await supabase.from("team_members").update({ role }).eq("id", memberId).eq("team_id", teamId);
 
   if (error) {
     throw new Error(getUserFacingSupabaseError(error, "Die Rolle konnte nicht gespeichert werden."));
@@ -483,10 +505,14 @@ export async function updateMemberRoleAction(teamId: string, memberId: string, f
 }
 
 export async function removeMemberAction(teamId: string, memberId: string) {
+  await runAction(`/teams/${teamId}/members`, () => removeMember(teamId, memberId));
+}
+
+async function removeMember(teamId: string, memberId: string) {
   const { supabase } = await requireTeamOwner(teamId, `/teams/${teamId}/members`);
   await assertNotLastOwner(supabase, teamId, memberId);
 
-  const { error } = await supabase.from("team_members").delete().eq("id", memberId);
+  const { error } = await supabase.from("team_members").delete().eq("id", memberId).eq("team_id", teamId);
 
   if (error) {
     throw new Error(getUserFacingSupabaseError(error, "Das Mitglied konnte nicht entfernt werden."));

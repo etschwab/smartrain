@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Card } from "./card";
 
 type EmptyStateProps = {
   title: string;
@@ -9,12 +8,12 @@ type EmptyStateProps = {
 
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <Card className="p-8 text-center">
-      <div className="mx-auto max-w-md space-y-3">
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
-        {action ? <div className="pt-2">{action}</div> : null}
+    <div className="rounded-xl border border-dashed border-border px-6 py-10 text-center">
+      <div className="mx-auto max-w-sm">
+        <h3 className="font-semibold">{title}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,61 +1,53 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Mail, ShieldCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { SubmitButton } from "@/components/forms/submit-button";
-import { updateProfileAction } from "@/lib/actions";
+import { signOutAction, updateProfileAction } from "@/lib/actions";
 import { requireProfile } from "@/lib/supabase-server";
-import { formatDateLabel, getDisplayName } from "@/lib/utils";
+import { formatDateLabel } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Profil",
-  description: "Deine Kontodaten und Anzeigeeinstellungen."
+  description: "Deine Kontodaten."
 };
 
 export default async function ProfilePage() {
   const { user, profile } = await requireProfile("/profile");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <Card className="p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="section-kicker">Profil</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{getDisplayName(profile.full_name, profile.email)}</h1>
-            <p className="mt-3 text-muted-foreground">Nur die wichtigsten Angaben für deinen Smartrain-Account.</p>
-          </div>
-          <Button asChild variant="secondary"><Link href="/dashboard">Zur Übersicht</Link></Button>
-        </div>
-      </Card>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader title="Profil" />
 
-      <Card className="p-6 sm:p-8">
-        <h2 className="text-xl font-semibold">Name bearbeiten</h2>
-        <form action={updateProfileAction} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="grid flex-1 gap-2 text-sm font-semibold">
-            Anzeigename
-            <Input name="full_name" defaultValue={profile.full_name ?? ""} placeholder="Dein Name" />
-          </label>
-          <SubmitButton pendingLabel="Wird gespeichert...">Speichern</SubmitButton>
+      <Card className="p-5 sm:p-6">
+        <form action={updateProfileAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <Field label="Anzeigename" hint="So sehen dich die anderen im Team." className="flex-1">
+            <Input name="full_name" defaultValue={profile.full_name ?? ""} placeholder="Vorname Nachname" maxLength={80} />
+          </Field>
+          <SubmitButton pendingLabel="Wird gespeichert..." className="sm:mb-5">Speichern</SubmitButton>
         </form>
       </Card>
 
-      <Card className="p-6 sm:p-8">
-        <h2 className="text-xl font-semibold">Account</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-background/70 p-4">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <p className="mt-3 text-xs text-muted-foreground">E-Mail</p>
-            <p className="mt-1 truncate font-semibold">{profile.email ?? user.email ?? "Keine E-Mail"}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-background/70 p-4">
-            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-            <p className="mt-3 text-xs text-muted-foreground">Account erstellt</p>
-            <p className="mt-1 font-semibold">{formatDateLabel(profile.created_at)}</p>
-          </div>
+      <Card className="divide-y divide-border">
+        <div className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
+          <span className="text-muted-foreground">E-Mail</span>
+          <span className="truncate font-medium">{profile.email ?? user.email ?? "Keine E-Mail"}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
+          <span className="text-muted-foreground">Dabei seit</span>
+          <span className="font-medium">{formatDateLabel(profile.created_at)}</span>
         </div>
       </Card>
+
+      <form action={signOutAction}>
+        <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+          <LogOut className="h-4 w-4" />
+          Abmelden
+        </Button>
+      </form>
     </div>
   );
 }

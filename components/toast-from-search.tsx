@@ -12,19 +12,27 @@ export function ToastFromSearch() {
 
   useEffect(() => {
     const toastKey = searchParams.get("toast");
+    const errorMessage = searchParams.get("actionError");
 
-    if (!toastKey) {
+    if (!toastKey && !errorMessage) {
       return;
     }
 
-    const message = toastMessages[toastKey] ?? "Aktion erfolgreich";
     const next = new URLSearchParams(searchParams.toString());
     next.delete("toast");
-    if (toastKey.includes("failed") || toastKey.includes("error")) {
-      toast.error(message);
-    } else {
-      toast.success(message);
+    next.delete("actionError");
+
+    if (errorMessage) {
+      toast.error(errorMessage.slice(0, 200));
+    } else if (toastKey) {
+      const message = toastMessages[toastKey] ?? "Aktion erfolgreich";
+      if (toastKey.includes("failed") || toastKey.includes("error")) {
+        toast.error(message);
+      } else {
+        toast.success(message);
+      }
     }
+
     const query = next.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);

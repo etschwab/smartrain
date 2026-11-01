@@ -2,10 +2,10 @@ import { CopyInviteButton } from "@/components/clipboard/copy-invite-button";
 import { ShareInviteButton } from "@/components/clipboard/share-invite-button";
 import { ConfirmSubmit } from "@/components/confirm-submit";
 import { InviteQrCode } from "@/components/team/invite-qr-code";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { buildJoinPath, formatDateTimeLabel, getRoleLabel } from "@/lib/utils";
+import { formatDateTimeLabel, getRoleLabel } from "@/lib/utils";
 import type { TeamInvite } from "@/lib/types";
 
 type InviteCardProps = {
@@ -17,51 +17,41 @@ type InviteCardProps = {
 
 export function InviteCard({ invite, absoluteUrl, regenerateAction, toggleAction }: InviteCardProps) {
   return (
-    <Card className="overflow-hidden p-6">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1 space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Einladungslink</p>
-              <h3 className="text-xl font-semibold">{invite.team_name}</h3>
-            </div>
-            <Badge variant={invite.is_active ? "success" : "muted"}>{invite.is_active ? "Aktiv" : "Pausiert"}</Badge>
-          </div>
-          <div className="rounded-none border border-border bg-background/70 p-5 text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">Code {invite.code}</Badge>
-              <Badge variant="outline">Rolle {getRoleLabel(invite.role)}</Badge>
-            </div>
-            <p className="mt-4 font-mono text-xs text-muted-foreground">{buildJoinPath(invite.code)}</p>
-            <p className="mt-2 break-all text-base font-semibold">{absoluteUrl}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+    <Card className="p-5">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-medium">Link für {getRoleLabel(invite.role)}</span>
+        {!invite.is_active ? <Badge variant="muted">Deaktiviert</Badge> : null}
+        {invite.last_used_at ? <span className="text-muted-foreground">· zuletzt genutzt {formatDateTimeLabel(invite.last_used_at)}</span> : null}
+      </div>
+      <p className="mt-2 select-all break-all rounded-lg bg-muted px-3 py-2 font-mono text-sm">{absoluteUrl}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {invite.is_active ? (
+          <>
             <CopyInviteButton value={absoluteUrl} />
             <ShareInviteButton title={`Einladung zu ${invite.team_name}`} url={absoluteUrl} />
-            {regenerateAction ? (
-              <form action={regenerateAction}>
-                <Button type="submit" variant="secondary">Link erneuern</Button>
-              </form>
-            ) : null}
-            {toggleAction ? (
-              <form action={toggleAction}>
-                <ConfirmSubmit
-                  type="submit"
-                  confirmMessage={invite.is_active ? "Link wirklich deaktivieren?" : "Link wieder aktivieren?"}
-                  variant="ghost"
-                >
-                  {invite.is_active ? "Deaktivieren" : "Aktivieren"}
-                </ConfirmSubmit>
-              </form>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <span>Rolle im Join-Flow: {getRoleLabel(invite.role)}</span>
-            {invite.expires_at ? <span>Gültig bis {formatDateTimeLabel(invite.expires_at)}</span> : <span>Ohne Ablauf</span>}
-            {invite.last_used_at ? <span>Zuletzt genutzt {formatDateTimeLabel(invite.last_used_at)}</span> : null}
-          </div>
-        </div>
-        <InviteQrCode url={absoluteUrl} teamName={invite.team_name} active={invite.is_active} />
+            <InviteQrCode url={absoluteUrl} teamName={invite.team_name} active={invite.is_active} />
+          </>
+        ) : null}
+        {regenerateAction ? (
+          <form action={regenerateAction}>
+            <ConfirmSubmit type="submit" variant="ghost" confirmMessage="Neuen Link erzeugen? Der bisherige Link funktioniert danach nicht mehr.">
+              Neu erzeugen
+            </ConfirmSubmit>
+          </form>
+        ) : null}
+        {toggleAction ? (
+          invite.is_active ? (
+            <form action={toggleAction}>
+              <ConfirmSubmit type="submit" variant="ghost" confirmMessage="Link deaktivieren? Niemand kann mehr darüber beitreten.">
+                Deaktivieren
+              </ConfirmSubmit>
+            </form>
+          ) : (
+            <form action={toggleAction}>
+              <Button type="submit" variant="secondary">Wieder aktivieren</Button>
+            </form>
+          )
+        ) : null}
       </div>
     </Card>
   );

@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "media",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -38,19 +38,21 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))"
-        }
+        },
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))"
       },
       borderRadius: {
-        xl: "1.25rem",
-        "2xl": "1.75rem",
-        "3xl": "2rem"
+        xl: "0.625rem",
+        "2xl": "0.875rem",
+        "3xl": "1rem"
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"]
       },
       boxShadow: {
-        soft: "0 24px 60px -32px rgba(15, 23, 42, 0.24)"
+        soft: "0 1px 2px rgb(0 0 0 / 0.04)"
       }
     }
   },

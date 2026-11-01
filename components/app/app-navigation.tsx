@@ -2,80 +2,98 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, LayoutDashboard, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Home, Plus, UserRound, Users } from "lucide-react";
+import { cn, getTeamAccentColor } from "@/lib/utils";
 
 const items = [
-  { href: "/dashboard", label: "Start", hint: "Dein Überblick", icon: LayoutDashboard },
-  { href: "/teams", label: "Teams", hint: "Termine & Mitglieder", icon: Users }
+  { href: "/dashboard", label: "Übersicht", icon: Home },
+  { href: "/teams", label: "Teams", icon: Users, exact: true },
+  { href: "/profile", label: "Profil", icon: UserRound }
 ];
+
+type NavTeam = { id: string; name: string; theme_color: string | null };
 
 type AppNavigationProps = {
   variant?: "sidebar" | "mobile";
-  onNavigate?: () => void;
+  teams?: NavTeam[];
+  canCreateTeam?: boolean;
 };
 
-export function AppNavigation({ variant = "sidebar", onNavigate }: AppNavigationProps) {
+function isActivePath(pathname: string, href: string, exact = false) {
+  return pathname === href || (!exact && pathname.startsWith(`${href}/`));
+}
+
+export function AppNavigation({ variant = "sidebar", teams = [], canCreateTeam = false }: AppNavigationProps) {
   const pathname = usePathname();
-  const isMobile = variant === "mobile";
 
-  return (
-    <nav
-      aria-label="App-Navigation"
-      className={cn(isMobile ? "grid h-full grid-cols-2 gap-1" : "flex flex-col gap-1.5")}
-    >
-      {items.map((item) => {
-        const Icon = item.icon;
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "group relative min-w-0 transition-all duration-200",
-              isMobile
-                ? "flex h-full flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[0.62rem] font-semibold leading-none"
-                : "flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5",
-              isActive && !isMobile &&
-                "border-border bg-muted/70 text-foreground before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-primary",
-              isActive && isMobile && "bg-muted text-foreground",
-              !isActive && "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-            )}
-          >
-            <span
+  if (variant === "mobile") {
+    return (
+      <nav aria-label="App-Navigation" className="grid h-full grid-cols-3">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const isActive = isActivePath(pathname, item.href, false);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "grid shrink-0 place-items-center transition-all duration-200",
-                isMobile ? "h-6 w-6" : "h-9 w-9 rounded-lg bg-muted group-hover:bg-muted/80",
-                isActive && !isMobile && "bg-background text-primary"
+                "flex flex-col items-center justify-center gap-1 text-[0.6875rem] font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
-            </span>
-            {isMobile ? (
-              item.label
-            ) : (
-              <>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold">{item.label}</span>
-                  <span className="mt-0.5 block text-[0.68rem] text-muted-foreground">{item.hint}</span>
-                </span>
-                <ChevronRight
-                  className={cn(
-                    "h-4 w-4 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-60",
-                    isActive && "translate-x-0 text-muted-foreground opacity-80"
-                  )}
-                />
-              </>
-            )}
-            {isActive && isMobile ? (
-              <span aria-hidden="true" className="absolute left-1/2 top-0 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
-            ) : null}
-          </Link>
-        );
-      })}
+              <Icon className="h-5 w-5" aria-hidden="true" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  const linkClass = (isActive: boolean) =>
+    cn(
+      "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
+      isActive ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+    );
+
+  return (
+    <nav aria-label="App-Navigation" className="space-y-6">
+      <div className="space-y-0.5">
+        {items.slice(0, 2).map((item) => {
+          const Icon = item.icon;
+          const isActive = isActivePath(pathname, item.href, item.exact);
+          return (
+            <Link key={item.href} href={item.href} aria-current={isActive ? "page" : undefined} className={linkClass(isActive)}>
+              <Icon className="h-4 w-4" aria-hidden="true" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      <div>
+        <p className="px-2.5 pb-1.5 text-xs font-medium text-muted-foreground">Deine Teams</p>
+        <div className="space-y-0.5">
+          {teams.map((team) => {
+            const href = `/teams/${team.id}`;
+            const isActive = isActivePath(pathname, href);
+            return (
+              <Link key={team.id} href={href} aria-current={isActive ? "page" : undefined} className={linkClass(isActive)}>
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: getTeamAccentColor(team.theme_color) }} />
+                <span className="truncate">{team.name}</span>
+              </Link>
+            );
+          })}
+          {canCreateTeam ? (
+            <Link href="/teams/new" className={linkClass(pathname === "/teams/new")}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Neues Team
+            </Link>
+          ) : null}
+          {teams.length === 0 && !canCreateTeam ? <p className="px-2.5 text-sm text-muted-foreground">Noch keine Teams</p> : null}
+        </div>
+      </div>
     </nav>
   );
 }

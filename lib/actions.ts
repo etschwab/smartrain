@@ -14,6 +14,7 @@ export {
   createEventFromTemplateAction,
   deleteEventAction,
   deleteEventTemplateAction,
+  respondToEventAction,
   toggleEventCancellationAction,
   updateEventAction
 } from "@/lib/actions/event-actions";

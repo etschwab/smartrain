@@ -351,13 +351,37 @@ export async function getCoreDashboardData(supabase: AppSupabaseClient, userId: 
 
   assertNoError(error, "Die nächsten Termine konnten nicht geladen werden");
   const teamMap = new Map(teams.map((team) => [team.id, team]));
-  const events = ((data as EventRecord[]) ?? []).map((event) => ({
+  const rawEvents = (data as EventRecord[]) ?? [];
+  const responses = await listUserResponses(supabase, userId, rawEvents.map((event) => event.id));
+  const events = rawEvents.map((event) => ({
     ...event,
     team: teamMap.get(event.team_id) ?? null,
-    response: null
+    response: responses.get(event.id) ?? null
   })) satisfies EventWithTeam[];
 
   return { teams, upcomingEvents: events };
+}
+
+/** The current user's own answers for the given events, keyed by event id. */
+export async function listUserResponses(supabase: AppSupabaseClient, userId: string, eventIds: string[]) {
+  const ids = unique(eventIds.filter(Boolean));
+
+  if (ids.length === 0) {
+    return new Map<string, EventResponseRecord>();
+  }
+
+  const { data, error } = await supabase
+    .from("event_responses")
+    .select("*")
+    .eq("user_id", userId)
+    .in("event_id", ids);
+
+  if (isRecoverableSetupError(error)) {
+    return new Map<string, EventResponseRecord>();
+  }
+
+  assertNoError(error, "Deine Antworten konnten nicht geladen werden");
+  return new Map(((data as EventResponseRecord[]) ?? []).map((response) => [response.event_id, response]));
 }
 
 export async function listEventResponses(supabase: AppSupabaseClient, eventId: string) {

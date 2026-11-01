@@ -5,9 +5,9 @@ import { Toaster } from "sonner";
 export function ToastProvider() {
   return (
     <Toaster
-      position="top-right"
+      position="top-center"
       richColors
-      theme="dark"
+      theme="system"
       toastOptions={{
         className: "font-medium"
       }}

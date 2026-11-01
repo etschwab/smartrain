@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { runAction } from "@/lib/action-errors";
 import { requireProfile } from "@/lib/supabase-server";
 import { getUserFacingSupabaseError, isRecoverableSetupError } from "@/lib/supabase-errors";
 
@@ -14,6 +15,10 @@ function getNullableString(formData: FormData, name: string) {
 }
 
 export async function updateProfileAction(formData: FormData) {
+  await runAction("/profile", () => updateProfile(formData));
+}
+
+async function updateProfile(formData: FormData) {
   const { supabase, user } = await requireProfile("/profile");
   const payload = {
     id: user.id,
